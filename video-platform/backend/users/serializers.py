@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'subscriber_count', 'video_count', 'like_count', 'total_views', 'is_verified')
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления профиля"""
     class Meta:
         model = User
         fields = ('bio', 'location', 'website', 'birth_date')

@@ -1,9 +1,10 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 from .models import Video, Comment, Complaint
 from .serializers import VideoSerializer, CommentSerializer, ComplaintSerializer
+import os
 
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.filter(is_published=True).order_by('-created_at')
@@ -24,8 +25,6 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def recommended(self, request):
-        """Рекомендации на основе просмотров и лайков"""
-        from django.db.models import Count, F
         videos = Video.objects.filter(is_published=True).annotate(
             score=Count('likes') + F('views')
         ).order_by('-score')[:20]
@@ -46,14 +45,17 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def view(self, request, pk=None):
+        """Увеличить счетчик просмотров"""
         video = self.get_object()
-        video.views += 1
+        video.views = F('views') + 1
         video.save()
+        video.refresh_from_db()
         
         # Обновляем общее количество просмотров автора
         author = video.author
-        author.total_views += 1
+        author.total_views = F('total_views') + 1
         author.save()
+        author.refresh_from_db()
         
         return Response({'views': video.views})
     
@@ -114,45 +116,49 @@ class VideoViewSet(viewsets.ModelViewSet):
                 )
     
     @action(detail=True, methods=['post'])
-    def complaint(self, request, pk=None):
-        """Пожаловаться на видео"""
+    def upload_thumbnail(self, request, pk=None):
         video = self.get_object()
         
-        if not request.user.is_authenticated:
+        if request.user != video.author:
             return Response(
-                {'error': 'Требуется авторизация'},
-                status=status.HTTP_401_UNAUTHORIZED
+                {'error': 'Вы можете загружать превью только для своих видео'}, 
+                status=status.HTTP_403_FORBIDDEN
             )
         
-        complaint_type = request.data.get('complaint_type')
-        description = request.data.get('description', '')
-        
-        if not complaint_type:
+        if 'thumbnail' not in request.FILES:
             return Response(
-                {'error': 'Укажите тип жалобы'},
+                {'error': 'Файл не найден'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Проверяем, не жаловался ли уже пользователь
-        if Complaint.objects.filter(video=video, user=request.user).exists():
+        thumbnail_file = request.FILES['thumbnail']
+        
+        if not thumbnail_file.content_type.startswith('image/'):
             return Response(
-                {'error': 'Вы уже жаловались на это видео'},
+                {'error': 'Можно загружать только изображения'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        complaint = Complaint.objects.create(
-            video=video,
-            user=request.user,
-            complaint_type=complaint_type,
-            description=description
-        )
+        if thumbnail_file.size > 5 * 1024 * 1024:
+            return Response(
+                {'error': 'Размер файла не должен превышать 5MB'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
-        serializer = ComplaintSerializer(complaint)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+        if video.thumbnail and video.thumbnail.name:
+            try:
+                if os.path.isfile(video.thumbnail.path):
+                    os.remove(video.thumbnail.path)
+            except:
+                pass
+        
+        video.thumbnail = thumbnail_file
+        video.save()
+        
+        serializer = VideoSerializer(video, context={'request': request})
+        return Response(serializer.data)
 
 class ComplaintViewSet(viewsets.ReadOnlyModelViewSet):
-    """Просмотр жалоб (только для админов)"""
     queryset = Complaint.objects.all().order_by('-created_at')
     serializer_class = ComplaintSerializer
     permission_classes = (permissions.IsAdminUser,)

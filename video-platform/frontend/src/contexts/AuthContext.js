@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
             toast.success('Успешный вход!');
             return true;
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Ошибка входа');
+            toast.error('Ошибка входа');
             return false;
         }
     };
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
             toast.success('Регистрация успешна! Теперь войдите');
             return true;
         } catch (error) {
-            toast.error(error.response?.data?.password?.[0] || 'Ошибка регистрации');
+            toast.error('Ошибка регистрации');
             return false;
         }
     };
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, setUser, login, register, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );

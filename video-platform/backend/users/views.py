@@ -2,8 +2,6 @@ from rest_framework import generics, permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 from .serializers import UserSerializer, RegisterSerializer, UserProfileUpdateSerializer
 import os
 

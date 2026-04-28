@@ -6,8 +6,8 @@ User = get_user_model()
 class Video(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    video_file = models.FileField(upload_to='videos/')
-    thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
+    video_file = models.FileField(upload_to='videos/%Y/%m/')
+    thumbnail = models.ImageField(upload_to='thumbnails/%Y/%m/', null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='videos')
     views = models.IntegerField(default=0)
     likes = models.ManyToManyField(User, related_name='liked_videos', blank=True)
@@ -40,7 +40,6 @@ class Comment(models.Model):
         return f"{self.user.username}: {self.text[:50]}"
 
 class Complaint(models.Model):
-    """Модель для жалоб на видео"""
     COMPLAINT_TYPES = [
         ('spam', 'Спам'),
         ('violence', 'Насилие'),
@@ -66,7 +65,7 @@ class Complaint(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['video', 'user']  # Один пользователь может пожаловаться на видео только раз
+        unique_together = ['video', 'user']
     
     def __str__(self):
         return f"Complaint on {self.video.title} by {self.user.username}"
