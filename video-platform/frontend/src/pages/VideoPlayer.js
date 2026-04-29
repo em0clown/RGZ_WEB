@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import moment from 'moment';
 import toast from 'react-hot-toast';
-import { FaHeart, FaRegHeart, FaBell, FaBellSlash, FaShare, FaDownload, FaExpand, FaVolumeUp, FaPlay, FaPause } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaBell, FaBellSlash, FaShare, FaExpand, FaVolumeUp, FaPlay, FaPause } from 'react-icons/fa';
 
 export default function VideoPlayer() {
     const { id } = useParams();
@@ -71,7 +71,6 @@ export default function VideoPlayer() {
 
     const handleSubscribe = async () => {
         if (!user) { toast.error('Войдите чтобы подписаться'); return; }
-        if (user.id === video.author.id) { toast.error('Нельзя подписаться на себя'); return; }
         try {
             const response = await axios.post(`/users/${video.author.id}/subscribe/`);
             setIsSubscribed(response.data.status === 'subscribed');
@@ -147,19 +146,14 @@ export default function VideoPlayer() {
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
 
-    const handleShare = () => {
-        navigator.clipboard.writeText(window.location.href);
-        toast.success('Ссылка скопирована!');
-    };
-
     if (!video) return <div className="flex justify-center items-center h-screen text-white">Загрузка...</div>;
 
     return (
-        <div className="pt-16 bg-black min-h-screen">
+        <div className="pt-16 min-h-screen">
             <div className="container mx-auto px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="lg:w-3/4">
-                        {/* Улучшенный видео плеер */}
+                        {/* Видео плеер - оставляем черный фон только для видео */}
                         <div className="relative bg-black rounded-xl overflow-hidden group">
                             <video
                                 ref={videoRef}
@@ -237,7 +231,7 @@ export default function VideoPlayer() {
                                         <span>{isSubscribed ? 'Отписаться' : 'Подписаться'}</span>
                                     </button>
                                     
-                                    <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-full hover:bg-gray-700 transition text-white">
+                                    <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Ссылка скопирована!'); }} className="flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-full hover:bg-gray-700 transition text-white">
                                         <FaShare /> Поделиться
                                     </button>
                                 </div>
@@ -248,7 +242,6 @@ export default function VideoPlayer() {
                                 <p className="text-sm text-gray-500 mt-2">{video.views?.toLocaleString()} просмотров</p>
                             </div>
                             
-                            {/* Комментарии */}
                             <div className="mt-8">
                                 <h3 className="text-xl font-bold text-white mb-4">Комментарии ({comments.length})</h3>
                                 

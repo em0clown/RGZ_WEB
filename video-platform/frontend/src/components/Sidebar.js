@@ -1,13 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaFire, FaUser, FaUpload, FaHeart } from 'react-icons/fa';
+import { FaHome, FaUser, FaUpload, FaHeart } from 'react-icons/fa';
 
 export default function Sidebar() {
     const location = useLocation();
     
     const menuItems = [
         { path: '/', icon: <FaHome className="text-xl" />, label: 'Главная' },
-        { path: '/trending', icon: <FaFire className="text-xl" />, label: 'В тренде' },
         { path: '/subscriptions', icon: <FaHeart className="text-xl" />, label: 'Подписки' },
         { path: '/upload', icon: <FaUpload className="text-xl" />, label: 'Загрузить' },
     ];

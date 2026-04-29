@@ -44,7 +44,7 @@ export default function UploadVideo() {
     };
 
     return (
-        <div className="pt-20 px-4 pb-8 bg-black min-h-screen">
+        <div className="pt-20 px-4 pb-8  min-h-screen">
             <div className="container mx-auto max-w-2xl">
                 <div className="bg-gray-900 rounded-2xl p-8">
                     <h1 className="text-3xl font-bold text-white mb-6">Загрузить видео</h1>

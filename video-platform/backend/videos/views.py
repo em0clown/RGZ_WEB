@@ -31,6 +31,22 @@ class VideoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(videos, many=True)
         return Response(serializer.data)
     
+    @action(detail=False, methods=['get'])
+    def subscriptions(self, request):
+        """Видео от каналов на которые подписан пользователь"""
+        if not request.user.is_authenticated:
+            return Response({'error': 'Требуется авторизация'}, status=401)
+        
+        # Получаем ID каналов на которые подписан пользователь
+        subscribed_users = request.user.subscribers.all()
+        videos = Video.objects.filter(
+            author__in=subscribed_users,
+            is_published=True
+        ).order_by('-created_at')
+        
+        serializer = self.get_serializer(videos, many=True)
+        return Response(serializer.data)
+    
     @action(detail=True, methods=['post'])
     def like(self, request, pk=None):
         video = self.get_object()
@@ -45,13 +61,11 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def view(self, request, pk=None):
-        """Увеличить счетчик просмотров"""
         video = self.get_object()
         video.views = F('views') + 1
         video.save()
         video.refresh_from_db()
         
-        # Обновляем общее количество просмотров автора
         author = video.author
         author.total_views = F('total_views') + 1
         author.save()

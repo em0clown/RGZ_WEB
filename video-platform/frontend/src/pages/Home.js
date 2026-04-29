@@ -44,7 +44,7 @@ export default function Home() {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="pt-20 px-4 pb-8 bg-black min-h-screen">
+        <div className="pt-20 px-4 pb-8  min-h-screen">
             <div className="container mx-auto">
                 <div className="flex gap-4 mb-6">
                     <button onClick={() => setActiveTab('recommended')} className={`px-6 py-2 rounded-full font-semibold transition flex items-center gap-2 ${activeTab === 'recommended' ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>

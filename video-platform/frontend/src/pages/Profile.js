@@ -99,9 +99,9 @@ export default function Profile() {
             const response = await axios.patch(
                 `/users/${profileUser.id}/update-profile/`,
                 {
-                    bio: editForm.bio,
-                    location: editForm.location,
-                    website: editForm.website,
+                    bio: editForm.bio || '',
+                    location: editForm.location || '',
+                    website: editForm.website || '',
                     birth_date: editForm.birth_date || null
                 },
                 {
@@ -119,6 +119,7 @@ export default function Profile() {
             }
         } catch (error) {
             console.error('Error updating profile:', error);
+            console.error('Response:', error.response?.data);
             toast.error(error.response?.data?.error || 'Ошибка обновления профиля');
         }
     };
@@ -199,7 +200,7 @@ export default function Profile() {
     if (!profileUser) return null;
 
     return (
-        <div className="pt-16 bg-black min-h-screen">
+        <div className="pt-16 min-h-screen">
             {/* Баннер */}
             <div className="relative h-48 bg-gradient-to-r from-purple-900 to-pink-900">
                 {getImageUrl(profileUser.banner) && (
@@ -246,16 +247,39 @@ export default function Profile() {
                                     <p className="text-gray-400 mt-2">{profileUser.bio || 'Нет описания'}</p>
                                     <div className="flex flex-wrap gap-4 mt-3 justify-center md:justify-start text-sm text-gray-500">
                                         {profileUser.location && <span className="flex items-center gap-1"><FaMapMarkerAlt /> {profileUser.location}</span>}
-                                        {profileUser.website && <span className="flex items-center gap-1"><FaLink /> <a href={profileUser.website} target="_blank" className="text-purple-400">{profileUser.website}</a></span>}
+                                        {profileUser.website && <span className="flex items-center gap-1"><FaLink /> <a href={profileUser.website} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">{profileUser.website}</a></span>}
                                         {profileUser.birth_date && <span className="flex items-center gap-1"><FaCalendarAlt /> {new Date(profileUser.birth_date).getFullYear()}</span>}
                                     </div>
                                 </>
                             ) : (
                                 <div className="mt-4 space-y-3 max-w-md mx-auto md:mx-0">
-                                    <textarea value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} placeholder="О себе" className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white" rows="2" />
-                                    <input type="text" value={editForm.location} onChange={(e) => setEditForm({...editForm, location: e.target.value})} placeholder="Местоположение" className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white" />
-                                    <input type="url" value={editForm.website} onChange={(e) => setEditForm({...editForm, website: e.target.value})} placeholder="Веб-сайт" className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white" />
-                                    <input type="date" value={editForm.birth_date} onChange={(e) => setEditForm({...editForm, birth_date: e.target.value})} className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white" />
+                                    <textarea
+                                        value={editForm.bio}
+                                        onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                                        placeholder="О себе"
+                                        className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white"
+                                        rows="2"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={editForm.location}
+                                        onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+                                        placeholder="Местоположение"
+                                        className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white"
+                                    />
+                                    <input
+                                        type="url"
+                                        value={editForm.website}
+                                        onChange={(e) => setEditForm({...editForm, website: e.target.value})}
+                                        placeholder="Веб-сайт"
+                                        className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white"
+                                    />
+                                    <input
+                                        type="date"
+                                        value={editForm.birth_date}
+                                        onChange={(e) => setEditForm({...editForm, birth_date: e.target.value})}
+                                        className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white"
+                                    />
                                 </div>
                             )}
                         </div>
@@ -263,16 +287,21 @@ export default function Profile() {
                         <div className="flex gap-3">
                             {isOwnProfile ? (
                                 !isEditing ? (
-                                    <button onClick={handleEdit} className="px-6 py-2 bg-gray-700 rounded-full text-white">
+                                    <button onClick={handleEdit} className="px-6 py-2 bg-gray-700 rounded-full hover:bg-gray-600 transition text-white">
                                         <FaEdit className="inline mr-2" /> Редактировать
                                     </button>
                                 ) : (
-                                    <button onClick={handleSave} className="px-6 py-2 bg-green-600 rounded-full text-white">
+                                    <button onClick={handleSave} className="px-6 py-2 bg-green-600 rounded-full hover:bg-green-700 transition text-white">
                                         <FaCheck className="inline mr-2" /> Сохранить
                                     </button>
                                 )
                             ) : (
-                                <button onClick={handleSubscribe} className={`px-6 py-2 rounded-full ${isSubscribed ? 'bg-gray-700' : 'bg-red-600'} text-white`}>
+                                <button
+                                    onClick={handleSubscribe}
+                                    className={`px-6 py-2 rounded-full transition ${
+                                        isSubscribed ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-600 hover:bg-red-700'
+                                    } text-white`}
+                                >
                                     {isSubscribed ? 'Отписаться' : 'Подписаться'}
                                 </button>
                             )}
@@ -283,6 +312,7 @@ export default function Profile() {
                         <div className="text-center"><div className="text-xl font-bold text-white">{subCount}</div><div className="text-sm text-gray-400">подписчиков</div></div>
                         <div className="text-center"><div className="text-xl font-bold text-white">{userVideos.length}</div><div className="text-sm text-gray-400">видео</div></div>
                         <div className="text-center"><div className="text-xl font-bold text-white">{profileUser.like_count || 0}</div><div className="text-sm text-gray-400">лайков</div></div>
+                        <div className="text-center"><div className="text-xl font-bold text-white">{profileUser.total_views || 0}</div><div className="text-sm text-gray-400">просмотров</div></div>
                     </div>
                 </div>
                 
@@ -291,7 +321,7 @@ export default function Profile() {
                     {userVideos.length === 0 ? (
                         <div className="text-center text-gray-500 py-12 bg-gray-900 rounded-lg">
                             <p>Нет видео</p>
-                            {isOwnProfile && <Link to="/upload" className="inline-block mt-4 px-6 py-2 bg-purple-600 rounded-full">Загрузить видео</Link>}
+                            {isOwnProfile && <Link to="/upload" className="inline-block mt-4 px-6 py-2 bg-purple-600 rounded-full hover:bg-purple-700 transition">Загрузить видео</Link>}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

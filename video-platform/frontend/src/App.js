@@ -12,13 +12,12 @@ import VideoPlayer from './pages/VideoPlayer';
 import UploadVideo from './pages/UploadVideo';
 import Profile from './pages/Profile';
 import Subscriptions from './pages/Subscriptions';
-import Trending from './pages/Trending';
 
 function App() {
     return (
         <Router>
             <AuthProvider>
-                <div className="min-h-screen bg-black">
+                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 to-black">
                     <Navbar />
                     <div className="flex">
                         <Sidebar />
@@ -30,7 +29,6 @@ function App() {
                                 <Route path="/video/:id" element={<VideoPlayer />} />
                                 <Route path="/profile/:username?" element={<Profile />} />
                                 <Route path="/subscriptions" element={<Subscriptions />} />
-                                <Route path="/trending" element={<Trending />} />
                                 <Route path="/upload" element={
                                     <PrivateRoute>
                                         <UploadVideo />
