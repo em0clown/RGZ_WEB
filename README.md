@@ -107,5 +107,3 @@ npm install
 lsof -ti:8000 | xargs kill -9  # Убить бэкенд
 lsof -ti:3000 | xargs kill -9  # Убить фронтенд
 ```
-
-Ошибка CORS: убедитесь, что в backend/settings.py есть CORS_ALLOW_ALL_ORIGINS = True
