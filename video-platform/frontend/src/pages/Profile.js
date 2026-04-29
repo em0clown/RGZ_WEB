@@ -3,18 +3,19 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import VideoCard from '../components/VideoCard';
-import { FaUserCircle, FaCalendarAlt, FaMapMarkerAlt, FaLink, FaEdit, FaCheck, FaCamera } from 'react-icons/fa';
+import { FaUserCircle, FaCalendarAlt, FaMapMarkerAlt, FaLink, FaEdit, FaCheck, FaCamera, FaBell, FaBellSlash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
     const { username } = useParams();
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, setUser } = useAuth();
     const navigate = useNavigate();
     const [profileUser, setProfileUser] = useState(null);
     const [userVideos, setUserVideos] = useState([]);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [subCount, setSubCount] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
+    const [hasNotifications, setHasNotifications] = useState(false);
     const [editForm, setEditForm] = useState({
         bio: '',
         location: '',
@@ -48,6 +49,7 @@ export default function Profile() {
                     birth_date: found.birth_date || ''
                 });
                 fetchUserVideos(found.id);
+                checkSubscription(found.id);
             } else {
                 toast.error('Пользователь не найден');
                 navigate('/');
@@ -69,6 +71,18 @@ export default function Profile() {
         }
     };
 
+    const checkSubscription = async (userId) => {
+        if (!currentUser) return;
+        try {
+            const response = await axios.get('/users/me/');
+            if (response.data && response.data.subscribers) {
+                setIsSubscribed(response.data.subscribers.includes(userId));
+            }
+        } catch (error) {
+            console.error('Error checking subscription:', error);
+        }
+    };
+
     const handleSubscribe = async () => {
         if (!currentUser) {
             navigate('/login');
@@ -78,7 +92,8 @@ export default function Profile() {
             const response = await axios.post(`/users/${profileUser.id}/subscribe/`);
             setIsSubscribed(response.data.status === 'subscribed');
             setSubCount(response.data.count);
-            toast.success(response.data.status === 'subscribed' ? 'Подписан' : 'Отписан');
+            setHasNotifications(true);
+            toast.success(response.data.status === 'subscribed' ? 'Вы подписались на канал' : 'Вы отписались от канала');
         } catch (error) {
             toast.error('Ошибка');
         }
@@ -119,7 +134,6 @@ export default function Profile() {
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            console.error('Response:', error.response?.data);
             toast.error(error.response?.data?.error || 'Ошибка обновления профиля');
         }
     };
@@ -150,6 +164,9 @@ export default function Profile() {
             );
             
             setProfileUser(response.data);
+            if (isOwnProfile && setUser) {
+                setUser(response.data);
+            }
             toast.success('Аватар обновлен!');
         } catch (error) {
             console.error('Error uploading avatar:', error);
@@ -159,7 +176,10 @@ export default function Profile() {
 
     const handleBannerUpload = async (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('No file selected');
+            return;
+        }
         
         const token = localStorage.getItem('access_token');
         if (!token) {
@@ -207,14 +227,22 @@ export default function Profile() {
                     <img src={getImageUrl(profileUser.banner)} alt="Banner" className="w-full h-full object-cover" />
                 )}
                 {isOwnProfile && (
-                    <button
-                        onClick={() => bannerInputRef.current?.click()}
-                        className="absolute bottom-4 right-4 bg-black bg-opacity-60 hover:bg-opacity-80 px-4 py-2 rounded-lg text-white text-sm transition flex items-center gap-2 cursor-pointer z-10"
-                    >
-                        <FaCamera /> Изменить баннер
-                    </button>
+                    <div className="absolute bottom-4 right-4 flex gap-2">
+                        <button
+                            onClick={() => bannerInputRef.current?.click()}
+                            className="bg-black bg-opacity-60 hover:bg-opacity-80 px-4 py-2 rounded-lg text-white text-sm transition flex items-center gap-2 cursor-pointer"
+                        >
+                            <FaCamera /> Изменить баннер
+                        </button>
+                        <input
+                            ref={bannerInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleBannerUpload}
+                            className="hidden"
+                        />
+                    </div>
                 )}
-                <input ref={bannerInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
             </div>
             
             <div className="container mx-auto px-4">
@@ -231,24 +259,46 @@ export default function Profile() {
                             </div>
                             {isOwnProfile && (
                                 <>
-                                    <button onClick={() => avatarInputRef.current?.click()} className="absolute bottom-0 right-0 bg-purple-600 rounded-full p-2 cursor-pointer">
+                                    <button
+                                        onClick={() => avatarInputRef.current?.click()}
+                                        className="absolute bottom-0 right-0 bg-purple-600 rounded-full p-2 cursor-pointer"
+                                    >
                                         <FaCamera className="text-white text-xs" />
                                     </button>
-                                    <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                                    <input
+                                        ref={avatarInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAvatarUpload}
+                                        className="hidden"
+                                    />
                                 </>
                             )}
                         </div>
                         
                         <div className="text-center md:text-left flex-1">
-                            <h1 className="text-3xl font-bold text-white">{profileUser.username}</h1>
+                            <div className="flex items-center gap-2 justify-center md:justify-start">
+                                <h1 className="text-3xl font-bold text-white">{profileUser.username}</h1>
+                                {hasNotifications && (
+                                    <span className="bg-purple-600 rounded-full p-1">
+                                        <FaBell className="text-white text-xs" />
+                                    </span>
+                                )}
+                            </div>
                             
                             {!isEditing ? (
                                 <>
                                     <p className="text-gray-400 mt-2">{profileUser.bio || 'Нет описания'}</p>
                                     <div className="flex flex-wrap gap-4 mt-3 justify-center md:justify-start text-sm text-gray-500">
-                                        {profileUser.location && <span className="flex items-center gap-1"><FaMapMarkerAlt /> {profileUser.location}</span>}
-                                        {profileUser.website && <span className="flex items-center gap-1"><FaLink /> <a href={profileUser.website} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">{profileUser.website}</a></span>}
-                                        {profileUser.birth_date && <span className="flex items-center gap-1"><FaCalendarAlt /> {new Date(profileUser.birth_date).getFullYear()}</span>}
+                                        {profileUser.location && (
+                                            <span className="flex items-center gap-1"><FaMapMarkerAlt /> {profileUser.location}</span>
+                                        )}
+                                        {profileUser.website && (
+                                            <span className="flex items-center gap-1"><FaLink /> <a href={profileUser.website} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">{profileUser.website}</a></span>
+                                        )}
+                                        {profileUser.birth_date && (
+                                            <span className="flex items-center gap-1"><FaCalendarAlt /> {new Date(profileUser.birth_date).getFullYear()}</span>
+                                        )}
                                     </div>
                                 </>
                             ) : (
@@ -298,10 +348,11 @@ export default function Profile() {
                             ) : (
                                 <button
                                     onClick={handleSubscribe}
-                                    className={`px-6 py-2 rounded-full transition ${
+                                    className={`px-6 py-2 rounded-full transition flex items-center gap-2 ${
                                         isSubscribed ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-600 hover:bg-red-700'
                                     } text-white`}
                                 >
+                                    {isSubscribed ? <FaBellSlash /> : <FaBell />}
                                     {isSubscribed ? 'Отписаться' : 'Подписаться'}
                                 </button>
                             )}
@@ -325,7 +376,29 @@ export default function Profile() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {userVideos.map(video => <VideoCard key={video.id} video={video} />)}
+                            {userVideos.map(video => (
+                                <div key={video.id} className="relative group">
+                                    <VideoCard video={video} />
+                                    {isOwnProfile && (
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm('Удалить видео?')) {
+                                                    try {
+                                                        await axios.delete(`/videos/${video.id}/`);
+                                                        fetchUserVideos(profileUser.id);
+                                                        toast.success('Видео удалено');
+                                                    } catch (error) {
+                                                        toast.error('Ошибка удаления');
+                                                    }
+                                                }
+                                            }}
+                                            className="absolute top-2 right-2 bg-red-600 rounded-full p-2 opacity-0 group-hover:opacity-100 transition"
+                                        >
+                                            🗑️
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

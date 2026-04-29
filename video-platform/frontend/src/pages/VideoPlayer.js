@@ -71,6 +71,7 @@ export default function VideoPlayer() {
 
     const handleSubscribe = async () => {
         if (!user) { toast.error('Войдите чтобы подписаться'); return; }
+        if (user.id === video.author.id) { toast.error('Нельзя подписаться на себя'); return; }
         try {
             const response = await axios.post(`/users/${video.author.id}/subscribe/`);
             setIsSubscribed(response.data.status === 'subscribed');
@@ -91,59 +92,10 @@ export default function VideoPlayer() {
         } catch (error) { toast.error('Ошибка'); }
     };
 
-    const togglePlay = () => {
-        if (videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.pause();
-            } else {
-                videoRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
-
-    const handleVolumeChange = (e) => {
-        const newVolume = parseFloat(e.target.value);
-        setVolume(newVolume);
-        if (videoRef.current) {
-            videoRef.current.volume = newVolume;
-        }
-    };
-
-    const handleTimeUpdate = () => {
-        if (videoRef.current) {
-            setCurrentTime(videoRef.current.currentTime);
-        }
-    };
-
-    const handleLoadedMetadata = () => {
-        if (videoRef.current) {
-            setDuration(videoRef.current.duration);
-        }
-    };
-
-    const handleSeek = (e) => {
-        const newTime = parseFloat(e.target.value);
-        setCurrentTime(newTime);
-        if (videoRef.current) {
-            videoRef.current.currentTime = newTime;
-        }
-    };
-
-    const toggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            videoRef.current?.requestFullscreen();
-            setIsFullscreen(true);
-        } else {
-            document.exitFullscreen();
-            setIsFullscreen(false);
-        }
-    };
-
-    const formatTime = (time) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const getAvatarUrl = (avatar) => {
+        if (!avatar) return null;
+        if (avatar.startsWith('http')) return avatar;
+        return `http://localhost:8000${avatar}`;
     };
 
     if (!video) return <div className="flex justify-center items-center h-screen text-white">Загрузка...</div>;
@@ -153,57 +105,13 @@ export default function VideoPlayer() {
             <div className="container mx-auto px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="lg:w-3/4">
-                        {/* Видео плеер - оставляем черный фон только для видео */}
                         <div className="relative bg-black rounded-xl overflow-hidden group">
                             <video
                                 ref={videoRef}
                                 className="w-full"
-                                onClick={togglePlay}
-                                onTimeUpdate={handleTimeUpdate}
-                                onLoadedMetadata={handleLoadedMetadata}
+                                onClick={() => videoRef.current?.play()}
                                 src={video.video_file}
                             />
-                            
-                            {/* Кастомные контролы */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="flex items-center gap-4">
-                                    <button onClick={togglePlay} className="text-white hover:text-purple-400">
-                                        {isPlaying ? <FaPause size={20} /> : <FaPlay size={20} />}
-                                    </button>
-                                    
-                                    <div className="flex-1">
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max={duration || 0}
-                                            value={currentTime}
-                                            onChange={handleSeek}
-                                            className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                                        />
-                                        <div className="flex justify-between text-white text-xs mt-1">
-                                            <span>{formatTime(currentTime)}</span>
-                                            <span>{formatTime(duration)}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-2">
-                                        <FaVolumeUp className="text-white" size={16} />
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="1"
-                                            step="0.01"
-                                            value={volume}
-                                            onChange={handleVolumeChange}
-                                            className="w-20 h-1 bg-gray-600 rounded-lg"
-                                        />
-                                    </div>
-                                    
-                                    <button onClick={toggleFullscreen} className="text-white hover:text-purple-400">
-                                        <FaExpand size={18} />
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                         
                         <div className="mt-4">
@@ -211,9 +119,13 @@ export default function VideoPlayer() {
                             
                             <div className="flex items-center justify-between mt-4 pb-4 border-b border-gray-800 flex-wrap gap-4">
                                 <Link to={`/profile/${video.author?.username}`} className="flex items-center space-x-3 group">
-                                    <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                                        {video.author?.username?.[0]?.toUpperCase()}
-                                    </div>
+                                    {getAvatarUrl(video.author?.avatar) ? (
+                                        <img src={getAvatarUrl(video.author?.avatar)} alt={video.author?.username} className="w-10 h-10 rounded-full object-cover" />
+                                    ) : (
+                                        <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                            {video.author?.username?.[0]?.toUpperCase()}
+                                        </div>
+                                    )}
                                     <div>
                                         <p className="font-semibold text-white group-hover:text-purple-400">{video.author?.username}</p>
                                         <p className="text-sm text-gray-400">{subCount} подписчиков</p>
@@ -225,12 +137,10 @@ export default function VideoPlayer() {
                                         {isLiked ? <FaHeart /> : <FaRegHeart />}
                                         <span>{likesCount}</span>
                                     </button>
-                                    
                                     <button onClick={handleSubscribe} className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${isSubscribed ? 'bg-gray-700' : 'bg-red-600'} text-white`}>
                                         {isSubscribed ? <FaBellSlash /> : <FaBell />}
                                         <span>{isSubscribed ? 'Отписаться' : 'Подписаться'}</span>
                                     </button>
-                                    
                                     <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Ссылка скопирована!'); }} className="flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-full hover:bg-gray-700 transition text-white">
                                         <FaShare /> Поделиться
                                     </button>
@@ -270,9 +180,13 @@ export default function VideoPlayer() {
                                         comments.map(comment => (
                                             <div key={comment.id} className="p-4 bg-gray-900 rounded-lg">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white text-sm">
-                                                        {comment.user?.username?.[0]?.toUpperCase()}
-                                                    </div>
+                                                    {getAvatarUrl(comment.user?.avatar) ? (
+                                                        <img src={getAvatarUrl(comment.user?.avatar)} alt={comment.user?.username} className="w-8 h-8 rounded-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white text-sm">
+                                                            {comment.user?.username?.[0]?.toUpperCase()}
+                                                        </div>
+                                                    )}
                                                     <div className="flex-1">
                                                         <Link to={`/profile/${comment.user?.username}`} className="font-semibold text-purple-400 hover:underline">
                                                             {comment.user?.username}

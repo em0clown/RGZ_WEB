@@ -14,6 +14,28 @@ class VideoViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
     
+    def destroy(self, request, *args, **kwargs):
+        """Удаление видео (только автор или админ)"""
+        video = self.get_object()
+        if request.user == video.author or request.user.is_staff:
+            # Удаляем файл видео
+            if video.video_file and video.video_file.name:
+                try:
+                    if os.path.isfile(video.video_file.path):
+                        os.remove(video.video_file.path)
+                except:
+                    pass
+            # Удаляем превью
+            if video.thumbnail and video.thumbnail.name:
+                try:
+                    if os.path.isfile(video.thumbnail.path):
+                        os.remove(video.thumbnail.path)
+                except:
+                    pass
+            video.delete()
+            return Response({'status': 'deleted'}, status=status.HTTP_200_OK)
+        return Response({'error': 'У вас нет прав на удаление этого видео'}, status=403)
+    
     def get_queryset(self):
         queryset = super().get_queryset()
         search = self.request.query_params.get('search', None)
@@ -33,11 +55,9 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def subscriptions(self, request):
-        """Видео от каналов на которые подписан пользователь"""
         if not request.user.is_authenticated:
             return Response({'error': 'Требуется авторизация'}, status=401)
         
-        # Получаем ID каналов на которые подписан пользователь
         subscribed_users = request.user.subscribers.all()
         videos = Video.objects.filter(
             author__in=subscribed_users,

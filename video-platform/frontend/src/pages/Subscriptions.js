@@ -20,7 +20,6 @@ export default function Subscriptions() {
     const fetchSubscriptions = async () => {
         setLoading(true);
         try {
-            // Используем новый эндпоинт для подписок
             const response = await axios.get('/videos/subscriptions/');
             setVideos(response.data);
         } catch (error) {
@@ -52,7 +51,7 @@ export default function Subscriptions() {
     return (
         <div className="pt-20 px-4 pb-8 min-h-screen">
             <div className="container mx-auto">
-                <h1 className="text-2xl font-bold text-white mb-6">Ваши подписки</h1>
+                <h1 className="text-2xl font-bold text-white mb-6">Подписки</h1>
                 {videos.length === 0 ? (
                     <div className="text-center text-gray-500 py-20 bg-gray-900 rounded-lg">
                         <p className="text-xl">Нет видео от ваших подписок</p>
@@ -66,9 +65,7 @@ export default function Subscriptions() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {videos.map(video => (
-                            <VideoCard key={video.id} video={video} />
-                        ))}
+                        {videos.map(video => <VideoCard key={video.id} video={video} />)}
                     </div>
                 )}
             </div>

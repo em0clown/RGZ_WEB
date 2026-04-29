@@ -6,12 +6,13 @@ import { FaSearch, FaUserCircle } from 'react-icons/fa';
 export default function Navbar() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchInput, setSearchInput] = useState('');
 
     const handleSearch = (e) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/?search=${searchQuery}`);
+        if (searchInput.trim()) {
+            navigate(`/?search=${encodeURIComponent(searchInput)}`);
+            setSearchInput('');
         }
     };
 
@@ -27,15 +28,11 @@ export default function Navbar() {
         <nav className="fixed top-0 left-0 right-0 bg-gray-900 border-b border-gray-800 z-50">
             <div className="flex items-center justify-between px-4 py-3">
                 <Link to="/" className="flex items-center">
-                    {/* Логотип - увеличенный размер */}
                     <img 
                         src="/images/logo.png" 
                         alt="Logo" 
-                        className="h-12 w-auto"
-                        onError={(e) => { 
-                            e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/48x48?text=🎬";
-                        }}
+                        className="h-10 w-auto"
+                        onError={(e) => { e.target.style.display = 'none' }}
                     />
                 </Link>
                 
@@ -44,8 +41,8 @@ export default function Navbar() {
                         <input
                             type="text"
                             placeholder="Поиск..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
                             className="w-full px-4 py-2 pl-10 bg-gray-800 border border-gray-700 rounded-full text-white focus:outline-none focus:border-purple-500"
                         />
                         <FaSearch className="absolute left-3 top-3 text-gray-400" />
@@ -64,8 +61,8 @@ export default function Navbar() {
                                 <span className="hidden md:inline text-white">{user.username}</span>
                             </Link>
                             <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg hidden group-hover:block">
-                                <Link to={`/profile/${user.username}`} className="block px-4 py-2 hover:bg-gray-700">Профиль</Link>
-                                <Link to="/upload" className="block px-4 py-2 hover:bg-gray-700">Загрузить видео</Link>
+                                <Link to={`/profile/${user.username}`} className="block px-4 py-2 hover:bg-gray-700 text-white">Профиль</Link>
+                                <Link to="/upload" className="block px-4 py-2 hover:bg-gray-700 text-white">Загрузить видео</Link>
                                 <button onClick={logout} className="block w-full text-left px-4 py-2 hover:bg-gray-700 text-red-400">
                                     Выйти
                                 </button>

@@ -4,12 +4,10 @@ import { FaEye } from 'react-icons/fa';
 import moment from 'moment';
 
 export default function VideoCard({ video }) {
-    const getAvatarUrl = () => {
-        if (video.author?.avatar) {
-            if (video.author.avatar.startsWith('http')) return video.author.avatar;
-            return `http://localhost:8000${video.author.avatar}`;
-        }
-        return null;
+    const getAvatarUrl = (avatar) => {
+        if (!avatar) return null;
+        if (avatar.startsWith('http')) return avatar;
+        return `http://localhost:8000${avatar}`;
     };
 
     return (
@@ -28,18 +26,24 @@ export default function VideoCard({ video }) {
                     <h3 className="font-semibold text-white line-clamp-2 text-sm group-hover:text-purple-400">
                         {video.title}
                     </h3>
-                    <Link to={`/profile/${video.author?.username}`} className="flex items-center space-x-2 mt-2">
-                        {getAvatarUrl() ? (
-                            <img src={getAvatarUrl()} alt={video.author?.username} className="w-5 h-5 rounded-full object-cover" />
+                    <div className="flex items-center gap-2 mt-2">
+                        {getAvatarUrl(video.author?.avatar) ? (
+                            <img 
+                                src={getAvatarUrl(video.author?.avatar)} 
+                                alt={video.author?.username} 
+                                className="w-6 h-6 rounded-full object-cover"
+                            />
                         ) : (
-                            <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center">
-                                <span className="text-white text-[10px]">{video.author?.username?.[0]?.toUpperCase()}</span>
+                            <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">
+                                {video.author?.username?.[0]?.toUpperCase()}
                             </div>
                         )}
-                        <span className="text-xs text-gray-400 hover:text-purple-400">{video.author?.username}</span>
-                    </Link>
+                        <span className="text-sm text-gray-400 group-hover:text-purple-400">
+                            {video.author?.username}
+                        </span>
+                    </div>
                     <div className="flex items-center justify-between mt-2">
-                        <span className="flex items-center space-x-1 text-xs text-gray-500">
+                        <span className="flex items-center gap-1 text-xs text-gray-500">
                             <FaEye className="text-xs" />
                             <span>{video.views?.toLocaleString()}</span>
                         </span>
