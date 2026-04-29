@@ -1,4 +1,4 @@
-# Video Platform
+# Видеохостинг
 
 Веб-приложение для просмотра, загрузки и управления видеоконтентом. Аналог YouTube с базовым функционалом.
 
@@ -13,6 +13,7 @@
 Требования: Python 3.10+, Node.js 18+, npm или yarn.
 
 Настройка бэкенда:
+```
 cd backend
 python -m venv venv
 source venv/bin/activate  # Для Windows: venv\Scripts\activate
@@ -20,19 +21,26 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
+```
 
 Настройка фронтенда:
+```
 cd frontend
 npm install
 npm start
+```
 
 Доступ к приложению:
+
 Фронтенд: http://localhost:3000
+
 Бэкенд API: http://localhost:8000/api/
+
 Админ-панель: http://localhost:8000/admin/
 
-## Структура проекта
 
+## Структура проекта
+```
 video-platform/
 ├── backend/                 # Django бэкенд
 │   ├── backend/            # Основные настройки
@@ -48,7 +56,7 @@ video-platform/
 │   │   ├── pages/          # Страницы
 │   │   └── App.js          # Главный компонент
 └── README.md
-
+```
 ## Функционал
 
 Пользователи: регистрация и авторизация (JWT), профиль пользователя (аватар, баннер, биография, местоположение, сайт, дата рождения), подписка на каналы.
@@ -60,7 +68,7 @@ video-platform/
 Страницы: главная (рекомендации и новые видео), подписки (видео от подписанных каналов), профиль пользователя, страница видео, загрузка видео.
 
 ## API Эндпоинты
-
+```
 Пользователи (api/users/):
 POST /register/ - Регистрация
 POST /login/ - Вход (JWT)
@@ -84,7 +92,7 @@ GET /{id}/comments/ - Комментарии
 POST /{id}/comments/ - Добавить комментарий
 DELETE /{id}/comments/ - Удалить комментарий
 DELETE /{id}/ - Удалить видео
-
+```
 ## Дизайн
 
 Цветовая схема из Figma:
@@ -99,23 +107,16 @@ DELETE /{id}/ - Удалить видео
 ## Решение проблем
 
 Ошибка Module not found:
+```
 cd frontend
 rm -rf node_modules package-lock.json
 npm install
+```
 
 Порт уже используется:
+```
 lsof -ti:8000 | xargs kill -9  # Убить бэкенд
 lsof -ti:3000 | xargs kill -9  # Убить фронтенд
+```
 
 Ошибка CORS: убедитесь, что в backend/settings.py есть CORS_ALLOW_ALL_ORIGINS = True
-
-## Лицензия
-
-MIT
-
-## Автор
-
-Ваше имя
-EOF
-
-echo "README.md готов"
