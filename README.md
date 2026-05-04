@@ -1,4 +1,4 @@
-# 📺 VideoHost: Fullstack Video Platform
+# 📺 Видеоплатформа
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
