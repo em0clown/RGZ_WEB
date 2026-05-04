@@ -1,19 +1,64 @@
-# Видеохостинг
+# 📺 VideoHost: Fullstack Video Platform
 
-Веб-приложение для просмотра, загрузки и управления видеоконтентом. Аналог YouTube с базовым функционалом.
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
 
-## Технологии
+Современное веб-приложение для обмена видеоконтентом, вдохновленное функционалом YouTube. Позволяет пользователям загружать видео, подписываться на каналы и взаимодействовать с контентом в реальном времени.
 
-Бэкенд: Django 5.0, Django REST Framework (DRF), JWT аутентификация, SQLite (по умолчанию) / PostgreSQL, Django CORS Headers.
 
-Фронтенд: React 18, Tailwind CSS, React Router DOM, Axios, React Icons, React Hot Toast.
+##  Основные возможности
 
-## Установка и запуск
+### 👤 Пользователи
+* **Аутентификация:** Безопасный вход через JWT (JSON Web Tokens).
+* **Профили:** Настройка аватара, баннера, биографии и личных данных.
+* **Социальное взаимодействие:** Система подписок на интересующие каналы.
 
-Требования: Python 3.10+, Node.js 18+, npm или yarn.
+### 🎬 Видео и Контент
+* **Загрузка:** Поддержка MP4 и кастомных превью (thumbnails).
+* **Плеер:** Собственный видеоплеер для комфортного просмотра.
+* **Реакции:** Система лайков и интерактивные комментарии.
+* **Аналитика:** Автоматический подсчет просмотров.
 
-Настройка бэкенда:
+### 🔍 Поиск и Навигация
+* **Умный поиск:** Поиск по названиям и описаниям с сохранением состояния в URL.
+* **Ленты:** Умные рекомендации, новинки и раздел с подписками.
+
+
+## 🛠 Технологический стек
+
+| Слой | Технологии |
+| :--- | :--- |
+| **Frontend** | React 18, Tailwind CSS, Axios, React Router DOM, React Hot Toast |
+| **Backend** | Django 5.0, Django REST Framework (DRF) |
+| **Безопасность** | JWT Authentication, Django CORS Headers |
+| **База данных** | SQLite (dev) / PostgreSQL (prod) |
+
+
+## 📂 Структура проекта
+```text
+video-platform/
+├── backend/             # Django API сервер
+│   ├── users/           # Управление аккаунтами и профилями
+│   ├── videos/          # Логика работы с контентом
+│   └── media/           # Хранилище видео и изображений
+├── frontend/            # React SPA приложение
+│   ├── src/components/  # Переиспользуемые UI элементы
+│   ├── src/contexts/    # Управление глобальным состоянием
+│   └── src/pages/       # Маршрутизация и страницы
+└── README.md
 ```
+
+
+## Быстрый старт
+
+### Требования
+* Python 3.10+
+* Node.js 18+
+
+### 1. Настройка Бэкенда
+```bash
 cd backend
 python -m venv venv
 source venv/bin/activate
@@ -23,87 +68,43 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Настройка фронтенда:
-```
+### 2. Настройка Фронтенда
+```bash
 cd frontend
 npm install
 npm start
 ```
 
-Доступ к приложению:
-
-Фронтенд: http://localhost:3000
-
-Бэкенд API: http://localhost:8000/api/
-
-Админ-панель: http://localhost:8000/admin/
+**Доступ по адресам:**
+* Frontend: `http://localhost:3000`
+* API Root: `http://localhost:8000/api/`
+* Admin Panel: `http://localhost:8000/admin/`
 
 
-## Структура проекта
-```
-video-platform/
-├── backend/                 # Django бэкенд
-│   ├── backend/            # Основные настройки
-│   ├── users/              # Приложение пользователей
-│   ├── videos/             # Приложение видео
-│   ├── media/              # Загруженные файлы
-│   └── db.sqlite3          # База данных
-├── frontend/               # React фронтенд
-│   ├── public/             # Статические файлы
-│   ├── src/
-│   │   ├── components/     # React компоненты
-│   │   ├── contexts/       # Context API
-│   │   ├── pages/          # Страницы
-│   │   └── App.js          # Главный компонент
-└── README.md
-```
-## Функционал
+## API Эндпоинты (Кратко)
 
-Пользователи: регистрация и авторизация (JWT), профиль пользователя (аватар, баннер, биография, местоположение, сайт, дата рождения), подписка на каналы.
+### Видео
+* `GET /api/videos/` — Список всех видео
+* `POST /api/videos/` — Загрузка нового контента
+* `POST /api/videos/{id}/like/` — Управление лайками
 
-Видео: просмотр видео с кастомным плеером, загрузка видео (MP4), добавление превью (thumbnail), лайки, комментарии с возможностью удаления, подсчет просмотров, удаление своих видео.
+### Пользователи
+* `POST /api/users/register/` — Регистрация
+* `GET /api/users/me/` — Данные текущего пользователя
+* `PATCH /api/users/{id}/update-profile/` — Редактирование профиля
 
-Поиск: поиск по названию и описанию видео, работает на всех вкладках, сохраняется в URL.
 
-Страницы: главная (рекомендации и новые видео), подписки (видео от подписанных каналов), профиль пользователя, страница видео, загрузка видео.
 
-## API Эндпоинты
-```
-Пользователи (api/users/):
-POST /register/ - Регистрация
-POST /login/ - Вход (JWT)
-POST /refresh/ - Обновление токена
-GET /me/ - Текущий пользователь
-GET / - Список пользователей
-POST /{id}/subscribe/ - Подписка/отписка
-PATCH /{id}/update-profile/ - Обновление профиля
-POST /{id}/upload-avatar/ - Загрузка аватара
-POST /{id}/upload-banner/ - Загрузка баннера
+## 🛠 Решение проблем
 
-Видео (api/videos/):
-GET / - Список видео
-GET /recommended/- Рекомендации
-GET /subscriptions/ - Видео из подписок
-POST / - Загрузка видео
-GET /{id}/ - Детали видео
-POST /{id}/like/ - Лайк/дизлайк
-POST /{id}/view/ - Увеличение просмотра
-GET /{id}/comments/ - Комментарии
-POST /{id}/comments/ - Добавить комментарий
-DELETE /{id}/comments/ - Удалить комментарий
-DELETE /{id}/ - Удалить видео
-```
-## Решение проблем
-
-Ошибка Module not found:
-```
-cd frontend
-rm -rf node_modules package-lock.json
-npm install
+**Ошибка "Module not found":**
+Попробуйте переустановить зависимости:
+```bash
+cd frontend && rm -rf node_modules package-lock.json && npm install
 ```
 
-Порт уже используется:
-```
-lsof -ti:8000 | xargs kill -9  # Убить бэкенд
-lsof -ti:3000 | xargs kill -9  # Убить фронтенд
+**Если порты (3000/8000) заняты:**
+```bash
+lsof -ti:8000 | xargs kill -9
+lsof -ti:3000 | xargs kill -9
 ```
